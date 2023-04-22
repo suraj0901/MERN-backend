@@ -11,6 +11,7 @@ import { config } from "dotenv";
 import connectDB from "./config/dbConn.js";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js"
+import notesRoutes from "./routes/notesRoutes.js"
 
 config()
 connectDB()
@@ -21,7 +22,7 @@ const app = express();
 const port = process.env.PORT || 3500;
 
 app.use(logger)
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
 app.use(cookieParser())
 
@@ -30,6 +31,7 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 app.use("/", routes);
 app.use('/users', userRoutes)
+app.use('/notes', notesRoutes)
 
 app.all("*", (req, res) => {
   res.status(404);
