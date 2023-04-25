@@ -9,7 +9,7 @@ import Note from "../models/Note.js";
  */
 const getAllNotes = expressAsyncHandler(async (req, res) => {
   const notes = await Note.find().lean();
-  
+
   // If no notes
   if (!notes?.length) {
     return res.status(400).json({ message: "Notes not Found" });
@@ -40,7 +40,10 @@ const createNote = expressAsyncHandler(async (req, res) => {
   }
 
   // Check for duplicate
-  const duplicate = await Note.findOne({ title }).lean().exec();
+  const duplicate = await Note.findOne({ title })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   if (duplicate) {
     return res.status(409).json({ message: "Duplicate Note" });
@@ -48,7 +51,7 @@ const createNote = expressAsyncHandler(async (req, res) => {
 
   // Create and Store note
   const note = await Note.create({ title, text, user });
-  
+
   if (!note) {
     return res.status(400).json({ message: "Invalid note data recieved" });
   }
@@ -77,7 +80,10 @@ const updateNote = expressAsyncHandler(async (req, res) => {
   }
 
   // Check for duplicate
-  const duplicate = await Note.findOne({ title }).lean().exec();
+  const duplicate = await Note.findOne({ title })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   if (duplicate && duplicate?._id.toString() !== id) {
     return res.status(409).json({ message: "Duplicate Note title" });
@@ -87,7 +93,7 @@ const updateNote = expressAsyncHandler(async (req, res) => {
   note.title = title;
   note.text = text;
   note.completed = completed;
-  
+
   const updatedNote = await note.save();
 
   if (!updatedNote) {
@@ -103,23 +109,23 @@ const updateNote = expressAsyncHandler(async (req, res) => {
  * @access private
  */
 const deleteNote = expressAsyncHandler(async (req, res) => {
-    const {id} = req.body
+  const { id } = req.body;
 
-    // Confirm data
-    if(!id) {
-        return res.status(400).json({message: "Note ID required"})
-    }
+  // Confirm data
+  if (!id) {
+    return res.status(400).json({ message: "Note ID required" });
+  }
 
-    // Confirm note exits to delete
-    const note = await Note.findById(id).exec()
+  // Confirm note exits to delete
+  const note = await Note.findById(id).exec();
 
-    if(!note) {
-        return res.status(400).json({message: "Note not found"})
-    }
+  if (!note) {
+    return res.status(400).json({ message: "Note not found" });
+  }
 
-    const result =  await note.deleteOne()
+  const result = await note.deleteOne();
 
-    res.json({message: `Note ${result.title} with ID ${result._id} deleted`})
+  res.json({ message: `Note ${result.title} with ID ${result._id} deleted` });
 });
 
 export default {
